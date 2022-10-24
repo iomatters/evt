@@ -18,7 +18,7 @@ This project includes Ansible harness to build, deploy and destroy a simple WebS
 
 You may want your testing machine to inherit all servers roles mentioned above.
 
-## What it does
+### What it does
 
 | # | Job |Host |Action|
 |--|--|--|--|
