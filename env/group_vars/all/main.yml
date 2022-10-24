@@ -1,0 +1,7 @@
+endpoint:
+  version: 1.0.0
+
+postgres:
+  user: ticker
+  password: ticker
+

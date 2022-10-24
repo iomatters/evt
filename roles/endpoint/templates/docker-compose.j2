@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  postgres:
+    container_name: postgres 
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    volumes:
+      - ./pg_dump.sql:/tmp/pg_dump.sql
+    networks:
+      - internal
+
+  endpoint:
+    container_name: endpoint
+    image: "endpoint:{{ endpoint.version }}" 
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+    depends_on:
+      - postgres
+
+networks:
+  internal: {}

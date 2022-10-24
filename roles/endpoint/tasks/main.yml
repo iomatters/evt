@@ -1,0 +1,112 @@
+---
+
+- name: Create temporary build directory
+  tempfile:
+    state: directory
+    suffix: build
+  tags: [ build, never ]
+  register: tempdir
+
+- name: Clone a github repository
+  git:
+    repo: https://github.com/iomatters/bequant.git 
+    dest: "{{ tempdir.path }}"
+    clone: yes
+    update: yes
+  tags: [ build, never ]
+
+- name: Build image and with build args
+  docker_image:
+    name: "endpoint:{{ endpoint.version }}" 
+    build:
+      path: "{{ tempdir.path }}/endpoint"
+      args:
+        version: "{{ endpoint.version }}"
+    source: build
+  tags: [ build, never ]
+
+- name: Create endpoint directory
+  file:
+    path: "/srv/endpoint"
+    state: directory
+  tags: [ deploy, never ]
+
+- name: Copy Docker Compose file
+  template:
+    src: "./templates/docker-compose.j2"
+    dest: "/srv/endpoint/docker-compose.yml"
+    backup: true
+  tags: [ deploy, never ]
+
+- name: Copy psql dump
+  template:
+    src: "./templates/pg_dump.j2"
+    dest: "/srv/endpoint/pg_dump.sql"
+    backup: true
+  tags: [ deploy, never ]
+
+- name: Deploy Docker Compose stack
+  docker_compose:
+    project_src: "/srv/endpoint"
+    files:
+    - docker-compose.yml
+  tags: [ deploy, never ]
+
+- name: Restore psql dump 
+  command: docker exec postgres bash -c 'cat /tmp/pg_dump.sql | psql -Upostgres' 
+  retries: 3
+  delay: 3
+  register: result
+  until: result.rc == 0
+  tags: [ deploy, never ]
+
+- name: Check endpoint container
+  command: docker ps --quiet --filter "name={{ item }}"
+  with_items:
+    - endpoint
+    - postgres  
+  tags: [ deploy, never ]
+
+- name: Print to stdout
+  command: echo "ws://{{ ansible_fqdn }}:8080"
+  register: ws_endpoint
+  tags: [ deploy, never ]
+
+- debug:
+    msg: "{{ ws_endpoint.stdout }}"
+  tags: [ deploy, never ]
+
+
+- name: Remove containers
+  docker_container:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - endpoint 
+    - postgres
+  tags: [ destroy, never ]
+
+- name: Remove images
+  docker_image:
+    name: "{{ item }}" 
+    state: absent
+  with_items:
+    - "endpoint:{{ endpoint.version }}"
+    - postgres:latest      
+  tags: [ destroy, never ]
+
+- find:
+    paths: /tmp
+    file_type: directory
+    patterns: "ansible.*"
+  register: output 
+  tags: [ destroy, never ]
+
+- file:
+    path: "{{ item['path'] }}"
+    state: absent
+  with_items: "{{ output['files'] }}"
+  tags: [ destroy, never ]
+
+- file: path=/srv/endpoint state=absent
+  tags: [ destroy, never ]

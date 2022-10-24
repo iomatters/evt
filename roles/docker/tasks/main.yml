@@ -1,0 +1,104 @@
+---
+## CentOS
+- name: Install yum utils
+  yum:
+    name: yum-utils
+    state: latest
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Install device-mapper-persistent-data
+  yum:
+    name: device-mapper-persistent-data
+    state: latest
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Install lvm2
+  yum:
+    name: lvm2
+    state: latest
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+  become: yes
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Enable Docker Edge repo
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: 'docker-ce-stable'
+    option: enabled
+    value: 0
+  become: yes
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Enable Docker Test repo
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: 'docker-ce-test'
+    option: enabled
+    value: 0
+  become: yes
+  when: ansible_facts['distribution']=="CentOS"
+
+- name: Install Docker
+  package:
+    name: docker-ce
+    state: latest
+  become: yes
+  when: ansible_facts['distribution']=="CentOS"
+  notify:
+    - Start Docker service 
+
+
+## Ubuntu
+- name: Install aptitude using apt
+  apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+  when: ansible_facts['distribution']=="Ubuntu"
+
+- name: Install required system packages
+  apt: name={{ item }} state=latest update_cache=yes
+  loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+  when: ansible_facts['distribution']=="Ubuntu"
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  when: ansible_facts['distribution']=="Ubuntu"
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+  when: ansible_facts['distribution']=="Ubuntu"
+
+- name: Update apt and install docker-ce
+  apt: update_cache=yes name=docker-ce state=latest
+  when: ansible_facts['distribution']=="Ubuntu"
+  notify:
+    - Start Docker service
+
+
+## Common
+- name: Install Docker Module for Python
+  pip:
+    name: docker
+  tags: [ always ]
+
+## Common
+- name: Install Docker Module for Python
+  pip:
+    name: docker-compose
+  tags: [ always ]
+
+- name: Add user ansible to docker group
+  user:
+    name: ansible
+    groups: docker
+    append: yes
+  become: yes
+  tags: [ always ]
+
