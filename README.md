@@ -58,7 +58,7 @@ Generate SSH keys
 
     sudo su - ansible
     ssh-keygen
-    cat /home/ansible/ssh/id_rsa.pub >> /home/ansible/.ssh/authorized_keys
+    cat /home/ansible/.ssh/id_rsa.pub >> /home/ansible/.ssh/authorized_keys
 
 ### On Target nodes
 
