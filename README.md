@@ -24,7 +24,7 @@ You may want your testing machine to inherit all servers roles mentioned above.
 |--|--|--|--|
 | 1 |Install |All| Install Docker and python dependencies|
 | 2 |Build |Target| Clone https://github.com/iomatters/bequant|
-| 3 |Build |Target| Build the Endpoint Docker image|
+| 3 |Build |Target| Build Endpoint Docker image|
 | 4 |Deploy |Target| Start up Docker containers|
 | 5 |Deploy |Target| Restore PostgreSQL dump|
 | 6 |Deploy |Target| Verify containers are up and running|
