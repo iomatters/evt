@@ -2,12 +2,12 @@ This project includes Ansible harness to build, deploy and destroy a simple WebS
 
 # Requirements
 
- - **Debian/Ubuntu, RHEL/CentOS**
- - **Python >= 3.8**
- - **Ansible >= 2.10.0**
- - **Docker**
- - **Docker-compose** 
- - **git**
+ - Debian/Ubuntu, RHEL/CentOS
+ - Python >= 3.8
+ - Ansible >= 2.10.0
+ - Docker
+ - Docker-compose
+ - Git
 
 # How it works
 
@@ -21,7 +21,7 @@ You may want your testing machine to inherit all servers roles mentioned above.
 ## What it does
 
 | # | Job |Host |Action|
-|--|--|--|--|--|
+|--|--|--|--|
 | 1 |Install |All| Install Docker and python dependencies|
 | 2 |Build |Target| Clone https://github.com/iomatters/bequant|
 | 3 |Build |Target| Build the Endpoint Docker image|
